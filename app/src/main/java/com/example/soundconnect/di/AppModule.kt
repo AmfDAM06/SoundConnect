@@ -3,6 +3,7 @@ package com.example.soundconnect.di
 import android.app.Application
 import androidx.room.Room
 import com.example.soundconnect.data.local.AppDatabase
+import com.example.soundconnect.data.local.TrackDao
 import com.example.soundconnect.data.remote.DeezerApi
 import com.example.soundconnect.data.repository.AuthRepositoryImpl
 import com.example.soundconnect.data.repository.ChatRepositoryImpl
@@ -62,7 +63,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRepository(api: DeezerApi, db: AppDatabase): TrackRepository {
-        return TrackRepositoryImpl(api, db.trackDao)
+    fun provideTrackDao(db: AppDatabase): TrackDao {
+        return db.trackDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideRepository(api: DeezerApi, trackDao: TrackDao): TrackRepository {
+        return TrackRepositoryImpl(api, trackDao)
     }
 }
