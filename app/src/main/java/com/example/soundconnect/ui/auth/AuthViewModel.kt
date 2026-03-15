@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.soundconnect.domain.repository.AuthRepository
+import com.google.firebase.auth.AuthCredential
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,25 +19,37 @@ class AuthViewModel @Inject constructor(
     var password by mutableStateOf("")
     var isLoading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
-    var isAuth by mutableStateOf(repository.currentUser != null)
+    
+    val isAuth: Boolean
+        get() = repository.currentUser != null
 
     fun login(onSuccess: () -> Unit) {
         viewModelScope.launch {
             isLoading = true
-            repository.login(email, password)
-                .onSuccess { isAuth = true; onSuccess() }
-                .onFailure { error = it.message }
+            error = null
+            val result = repository.login(email, password)
             isLoading = false
+            if (result.isSuccess) onSuccess() else error = result.exceptionOrNull()?.message
         }
     }
-
+    
     fun register(onSuccess: () -> Unit) {
         viewModelScope.launch {
             isLoading = true
-            repository.register(email, password)
-                .onSuccess { isAuth = true; onSuccess() }
-                .onFailure { error = it.message }
+            error = null
+            val result = repository.register(email, password)
             isLoading = false
+            if (result.isSuccess) onSuccess() else error = result.exceptionOrNull()?.message
+        }
+    }
+
+    fun loginWithCredential(credential: AuthCredential, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            isLoading = true
+            error = null
+            val result = repository.signInWithCredential(credential)
+            isLoading = false
+            if (result.isSuccess) onSuccess() else error = result.exceptionOrNull()?.message
         }
     }
 }

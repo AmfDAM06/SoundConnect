@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -60,7 +60,8 @@ fun SoundConnectNavGraph() {
                     navController.navigate("main") {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
-                }
+                },
+                onGoogleLoginClick = { /* Implementar login Google */ }
             )
         }
         composable(Screen.Register.route) {
@@ -91,7 +92,7 @@ fun MainScreen() {
                 
                 val items = listOf(
                     Triple(Screen.Search, "Buscar", Icons.Default.Search),
-                    Triple(Screen.Chat, "Chat", Icons.Default.Chat),
+                    Triple(Screen.Chat, "Chat", Icons.AutoMirrored.Filled.Chat),
                     Triple(Screen.Map, "Mapa", Icons.Default.Map)
                 )
 

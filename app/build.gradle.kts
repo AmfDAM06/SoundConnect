@@ -53,6 +53,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)
+    
+    // Añadir iconos extendidos para que no den error Chat y Map
+    implementation("androidx.compose.material:material-icons-extended")
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)

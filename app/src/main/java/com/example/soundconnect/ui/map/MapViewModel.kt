@@ -32,7 +32,7 @@ class MapViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    private val accelerometer = sensorManager.getDefaultAdapter()?.let { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
+    private val accelerometer: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
     var recommendedTrack by mutableStateOf<String?>(null)
 
@@ -63,7 +63,7 @@ class MapViewModel @Inject constructor(
             val y = event.values[1]
             val z = event.values[2]
             val acceleration = sqrt(x * x + y * y + z * z) - SensorManager.GRAVITY_EARTH
-            if (acceleration > 12) { // Agitar detectado
+            if (acceleration > 12) {
                 recommendedTrack = "Recomendación: Daft Punk - One More Time"
             }
         }

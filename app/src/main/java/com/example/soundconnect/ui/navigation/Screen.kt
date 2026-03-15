@@ -1,10 +1,10 @@
 package com.example.soundconnect.ui.navigation
 
 sealed class Screen(val route: String) {
-    object Login : Screen("login")
-    object Register : Screen("register")
-    object Search : Screen("search")
-    object Favorites : Screen("favorites")
-    object Chat : Screen("chat")
-    object Map : Screen("map")
+    data object Login : Screen("login")
+    data object Register : Screen("register")
+    data object Search : Screen("search")
+    data object Favorites : Screen("favorites")
+    data object Chat : Screen("chat")
+    data object Map : Screen("map")
 }
