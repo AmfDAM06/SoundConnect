@@ -1,7 +1,6 @@
 package com.example.soundconnect
 
 import android.os.Bundle
-import com.example.soundconnect.R
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -20,12 +20,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
+import com.example.soundconnect.R
 import com.example.soundconnect.ui.auth.AuthViewModel
 import com.example.soundconnect.ui.auth.LoginScreen
 import com.example.soundconnect.ui.auth.RegisterScreen
 import com.example.soundconnect.ui.chat.ChatScreen
 import com.example.soundconnect.ui.chat.ChatViewModel
 import com.example.soundconnect.ui.navigation.Screen
+import com.example.soundconnect.ui.profile.ProfileScreen
 import com.example.soundconnect.ui.search.SearchScreen
 import com.example.soundconnect.ui.search.SearchViewModel
 import com.example.soundconnect.ui.map.MapScreen
@@ -111,13 +113,17 @@ fun SoundConnectNavGraph() {
             )
         }
         composable("main") {
-            MainScreen()
+            MainScreen(onLogout = {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(0) { inclusive = true }
+                }
+            })
         }
     }
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onLogout: () -> Unit) {
     val navController = rememberNavController()
     Scaffold(
         bottomBar = {
@@ -128,7 +134,8 @@ fun MainScreen() {
                 val items = listOf(
                     Triple(Screen.Search, "Buscar", Icons.Default.Search),
                     Triple(Screen.Chat, "Chat", Icons.AutoMirrored.Filled.Chat),
-                    Triple(Screen.Map, "Mapa", Icons.Default.Map)
+                    Triple(Screen.Map, "Mapa", Icons.Default.Map),
+                    Triple(Screen.Profile, "Perfil", Icons.Default.Person)
                 )
 
                 items.forEach { (screen, label, icon) ->
@@ -160,6 +167,10 @@ fun MainScreen() {
             composable(Screen.Map.route) {
                 val viewModel: MapViewModel = hiltViewModel()
                 MapScreen(viewModel)
+            }
+            composable(Screen.Profile.route) {
+                val viewModel: AuthViewModel = hiltViewModel()
+                ProfileScreen(viewModel = viewModel, onLogout = onLogout)
             }
         }
     }

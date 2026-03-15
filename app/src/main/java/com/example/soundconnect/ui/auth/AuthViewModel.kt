@@ -51,4 +51,8 @@ class AuthViewModel @Inject constructor(
             if (result.isSuccess) onSuccess() else error = result.exceptionOrNull()?.message
         }
     }
+
+    fun logout() {
+        repository.logout()
+    }
 }

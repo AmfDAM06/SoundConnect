@@ -12,15 +12,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.soundconnect.domain.repository.AuthRepository
+import com.example.soundconnect.ui.auth.AuthViewModel
+import com.facebook.login.LoginManager
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 
 @Composable
-fun ProfileScreen(authRepository: AuthRepository) {
+fun ProfileScreen(viewModel: AuthViewModel, onLogout: () -> Unit) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
-    val user = authRepository.currentUser
+    val user = viewModel.currentUser
+    val context = LocalContext.current
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -61,6 +66,21 @@ fun ProfileScreen(authRepository: AuthRepository) {
             Button(onClick = { cameraLauncher.launch(null) }) {
                 Text("Cámara")
             }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = {
+                viewModel.logout()
+                LoginManager.getInstance().logOut()
+                GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut()
+                onLogout()
+            },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+        ) {
+            Text("Cerrar Sesión")
         }
     }
 }
