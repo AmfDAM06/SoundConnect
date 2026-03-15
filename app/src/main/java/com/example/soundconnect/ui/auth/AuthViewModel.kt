@@ -19,9 +19,8 @@ class AuthViewModel @Inject constructor(
     var password by mutableStateOf("")
     var isLoading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
-    
-    val isAuth: Boolean
-        get() = repository.currentUser != null
+
+    val currentUser get() = repository.currentUser
 
     fun login(onSuccess: () -> Unit) {
         viewModelScope.launch {
@@ -32,7 +31,7 @@ class AuthViewModel @Inject constructor(
             if (result.isSuccess) onSuccess() else error = result.exceptionOrNull()?.message
         }
     }
-    
+
     fun register(onSuccess: () -> Unit) {
         viewModelScope.launch {
             isLoading = true

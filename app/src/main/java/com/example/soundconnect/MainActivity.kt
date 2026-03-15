@@ -1,8 +1,11 @@
 package com.example.soundconnect
 
 import android.os.Bundle
+import com.example.soundconnect.R
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -12,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -28,6 +32,10 @@ import com.example.soundconnect.ui.map.MapScreen
 import com.example.soundconnect.ui.map.MapViewModel
 import com.example.soundconnect.ui.theme.SoundConnectTheme
 import com.example.soundconnect.ui.theme.ThemeViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -47,10 +55,30 @@ class MainActivity : ComponentActivity() {
 fun SoundConnectNavGraph() {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = hiltViewModel()
+    val context = LocalContext.current
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            account?.idToken?.let { idToken ->
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                authViewModel.loginWithCredential(credential) {
+                    navController.navigate("main") {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            }
+        } catch (e: ApiException) {
+            authViewModel.error = e.message
+        }
+    }
 
     NavHost(
         navController = navController,
-        startDestination = if (authViewModel.isAuth) "main" else Screen.Login.route
+        startDestination = if (authViewModel.currentUser != null) "main" else Screen.Login.route
     ) {
         composable(Screen.Login.route) {
             LoginScreen(
@@ -61,7 +89,14 @@ fun SoundConnectNavGraph() {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
-                onGoogleLoginClick = { /* Implementar login Google */ }
+                onGoogleLoginClick = {
+                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(context.getString(R.string.default_web_client_id))
+                        .requestEmail()
+                        .build()
+                    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                    googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                }
             )
         }
         composable(Screen.Register.route) {
@@ -89,7 +124,7 @@ fun MainScreen() {
             NavigationBar {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
-                
+
                 val items = listOf(
                     Triple(Screen.Search, "Buscar", Icons.Default.Search),
                     Triple(Screen.Chat, "Chat", Icons.AutoMirrored.Filled.Chat),
@@ -114,17 +149,17 @@ fun MainScreen() {
         }
     ) { innerPadding ->
         NavHost(navController, startDestination = Screen.Search.route, Modifier.padding(innerPadding)) {
-            composable(Screen.Search.route) { 
+            composable(Screen.Search.route) {
                 val viewModel: SearchViewModel = hiltViewModel()
-                SearchScreen(viewModel) 
+                SearchScreen(viewModel)
             }
-            composable(Screen.Chat.route) { 
+            composable(Screen.Chat.route) {
                 val viewModel: ChatViewModel = hiltViewModel()
-                ChatScreen(viewModel) 
+                ChatScreen(viewModel)
             }
-            composable(Screen.Map.route) { 
+            composable(Screen.Map.route) {
                 val viewModel: MapViewModel = hiltViewModel()
-                MapScreen(viewModel) 
+                MapScreen(viewModel)
             }
         }
     }

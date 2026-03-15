@@ -1,15 +1,19 @@
 package com.example.soundconnect.ui.auth
 
-import android.app.Activity
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.OAuthProvider
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import com.google.firebase.auth.FacebookAuthProvider
 
 @Composable
 fun LoginScreen(
@@ -19,7 +23,23 @@ fun LoginScreen(
     onGoogleLoginClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val activity = context as? Activity
+    val callbackManager = remember { CallbackManager.Factory.create() }
+
+    DisposableEffect(Unit) {
+        LoginManager.getInstance().registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+            override fun onSuccess(result: LoginResult) {
+                val credential = FacebookAuthProvider.getCredential(result.accessToken.token)
+                viewModel.loginWithCredential(credential, onLoginSuccess)
+            }
+            override fun onCancel() {}
+            override fun onError(error: FacebookException) {
+                viewModel.error = error.message
+            }
+        })
+        onDispose {
+            LoginManager.getInstance().unregisterCallback(callbackManager)
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -44,17 +64,11 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
-                    activity?.let {
-                        val provider = OAuthProvider.newBuilder("facebook.com")
-                        FirebaseAuth.getInstance()
-                            .startActivityForSignInWithProvider(it, provider.build())
-                            .addOnSuccessListener {
-                                onLoginSuccess()
-                            }
-                            .addOnFailureListener { e ->
-                                viewModel.error = e.message
-                            }
-                    }
+                    LoginManager.getInstance().logIn(
+                        context as ComponentActivity,
+                        callbackManager,
+                        listOf("email", "public_profile")
+                    )
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

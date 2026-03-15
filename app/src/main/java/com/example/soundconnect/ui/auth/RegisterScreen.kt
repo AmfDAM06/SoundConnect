@@ -18,16 +18,21 @@ fun RegisterScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Registro", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
         TextField(value = viewModel.email, onValueChange = { viewModel.email = it }, label = { Text("Email") })
         Spacer(modifier = Modifier.height(8.dp))
         TextField(value = viewModel.password, onValueChange = { viewModel.password = it }, label = { Text("Password") })
         Spacer(modifier = Modifier.height(16.dp))
-        if (viewModel.isLoading) CircularProgressIndicator()
-        else {
-            Button(onClick = { viewModel.register(onRegisterSuccess) }) { Text("Registrarse") }
-            TextButton(onClick = onNavigateToLogin) { Text("¿Ya tienes cuenta? Inicia sesión") }
+
+        if (viewModel.isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Button(onClick = { viewModel.register(onRegisterSuccess) }, modifier = Modifier.fillMaxWidth()) {
+                Text("Registrar")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(onClick = onNavigateToLogin) {
+                Text("¿Ya tienes cuenta? Inicia sesión")
+            }
         }
         viewModel.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     }
